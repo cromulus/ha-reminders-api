@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Reminders API integration",
+        "description": "Configure your Reminders API server connection",
+        "data": {
+          "name": "Name",
+          "url": "API Server URL",
+          "token": "API Token (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the API server",
+      "invalid_auth": "Invalid authentication token",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This API server is already configured"
+    }
+  }
+}
