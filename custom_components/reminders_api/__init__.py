@@ -85,23 +85,44 @@ class RemindersDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             # Get all lists with metadata
             raw_lists = await self.api.get_lists()
+            _LOGGER.info("Got %d lists from API", len(raw_lists) if raw_lists else 0)
+            _LOGGER.debug("Raw lists response: %s", raw_lists)
 
             lists_meta: dict[str, dict] = {}
             lists_data: dict[str, list[dict]] = {}
 
+            # Handle empty or null response
+            if not raw_lists:
+                _LOGGER.warning("No lists returned from API. Response was: %s", raw_lists)
+                return {}
+
             for list_info in raw_lists:
-                list_id = list_info.get("uuid") or list_info.get("id")
+                _LOGGER.debug("Processing list: %s", list_info)
+
+                # Handle if the API returns just strings (list names)
+                if isinstance(list_info, str):
+                    list_id = list_info
+                    list_info = {"name": list_info, "title": list_info}
+                else:
+                    # Try different field names for the list identifier
+                    list_id = (list_info.get("uuid") or
+                              list_info.get("id") or
+                              list_info.get("name") or
+                              list_info.get("title"))
+
                 if not list_id:
-                    _LOGGER.warning("Skipping list without UUID: %s", list_info)
+                    _LOGGER.warning("Skipping list without identifier: %s", list_info)
                     continue
 
                 lists_meta[list_id] = list_info
+                _LOGGER.info("Found list: %s", list_id)
 
                 try:
                     reminders = await self.api.get_reminders(
                         list_id, include_completed=True
                     )
                     lists_data[list_id] = reminders or []
+                    _LOGGER.info("Got %d reminders for list %s", len(reminders) if reminders else 0, list_id)
                 except Exception as err:  # pylint: disable=broad-except
                     display_name = list_info.get("title", list_id)
                     _LOGGER.error(
@@ -114,6 +135,7 @@ class RemindersDataUpdateCoordinator(DataUpdateCoordinator):
 
             self.lists_meta = lists_meta
             self.lists_data = lists_data
+            _LOGGER.info("Total lists configured: %d", len(lists_data))
             return lists_data
 
         except Exception as err:

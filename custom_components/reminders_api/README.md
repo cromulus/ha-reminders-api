@@ -15,12 +15,30 @@ A Home Assistant custom integration that connects to the reminders-api to sync m
 ## Requirements
 
 - Home Assistant 2023.11 or later (for todo platform support)
-- [reminders-cli](https://github.com/keith/reminders-cli) server running on a macOS machine
+- [reminders-cli](https://github.com/cromulus/reminders-cli) server running on a macOS machine
 - Access to Apple Reminders on the macOS machine
 - Network connectivity between Home Assistant and the reminders-cli server
 - (Optional) API authentication token
 
 ## Installation
+
+### Prerequisites - Set up reminders-cli server
+
+Before installing this integration, you need to have reminders-cli running as a server:
+
+1. **On your macOS machine**:
+   - Clone or download the repository from [https://github.com/cromulus/reminders-cli](https://github.com/cromulus/reminders-cli)
+   - Follow the installation instructions in that repository's README
+
+2. **Start the server**:
+   ```bash
+   reminders serve --port 8080
+   ```
+
+3. **Test the server** is accessible:
+   ```bash
+   curl http://localhost:8080/lists
+   ```
 
 ### Method 1: Manual Installation
 
@@ -56,7 +74,9 @@ A Home Assistant custom integration that connects to the reminders-api to sync m
 3. Search for and select **Reminders API**
 4. Fill in the configuration:
    - **Name**: A friendly name for this integration (e.g., "My Reminders")
-   - **API Server URL**: The URL of your reminders-api server (e.g., `http://localhost:8080`)
+   - **API Server URL**: The URL of your reminders-cli server:
+     - If on same machine: `http://localhost:8080`
+     - If on different machine: `http://<mac-ip-address>:8080`
    - **API Token** (optional): Your API authentication token if required
 
 5. Click **Submit**
@@ -123,7 +143,7 @@ automation:
 
 ## API Compatibility
 
-This integration is compatible with reminders-api v1.0.0+. It uses the following endpoints:
+This integration is compatible with reminders-cli server mode. It uses the following endpoints:
 
 - `GET /lists` - Fetch all lists
 - `GET /lists/:name` - Fetch reminders from a list
@@ -137,7 +157,7 @@ This integration is compatible with reminders-api v1.0.0+. It uses the following
 
 ### Integration won't connect
 
-1. Verify the reminders-api server is running:
+1. Verify the reminders-cli server is running on your Mac:
    ```bash
    curl http://localhost:8080/lists
    ```
@@ -160,9 +180,9 @@ This integration is compatible with reminders-api v1.0.0+. It uses the following
 
 ### Authentication errors
 
-- Ensure your API token is correct
-- Verify the reminders-api is configured to accept the token
-- Try connecting without a token if auth is optional
+- Ensure your API token is correct if you've configured one
+- Verify the reminders-cli server is configured to accept the token
+- Most setups don't require a token - try leaving it blank
 
 ## Development
 

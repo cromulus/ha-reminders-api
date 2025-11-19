@@ -103,7 +103,22 @@ class RemindersAPIClient:
 
     async def get_lists(self) -> list[dict[str, Any]]:
         """Get all reminder lists with metadata."""
-        return await self._request("GET", ENDPOINT_LISTS)
+        result = await self._request("GET", ENDPOINT_LISTS)
+        _LOGGER.info("get_lists API response type: %s", type(result))
+        _LOGGER.info("get_lists API response: %s", result)
+
+        # Handle different response formats
+        if isinstance(result, dict):
+            # If it's a dict, it might have a 'lists' key or similar
+            if "lists" in result:
+                return result["lists"]
+            # Or it might be a dict of lists keyed by name
+            return list(result.values())
+        elif isinstance(result, list):
+            return result
+        else:
+            _LOGGER.warning("Unexpected response format: %s", result)
+            return []
 
     async def get_reminders(self, list_name: str, include_completed: bool = False) -> list[dict[str, Any]]:
         """Get reminders from a specific list."""
