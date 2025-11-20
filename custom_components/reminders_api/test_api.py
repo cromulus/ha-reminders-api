@@ -1,11 +1,24 @@
 #!/usr/bin/env python3
-"""Test script to debug reminders-api connection."""
+"""Test script to debug reminders-api connection.
+
+Run this from the Home Assistant container/environment:
+    python3 custom_components/reminders_api/test_api.py http://YOUR_SERVER_URL
+
+Or use curl from the HA terminal:
+    curl http://YOUR_SERVER_URL/lists
+"""
 
 import asyncio
-import aiohttp
 import json
 import sys
 from urllib.parse import quote
+
+# Try to import aiohttp, fall back to instructions if not available
+try:
+    import aiohttp
+    HAS_AIOHTTP = True
+except ImportError:
+    HAS_AIOHTTP = False
 
 async def test_api(url, token=None):
     """Test the reminders API endpoints."""
@@ -95,6 +108,22 @@ async def test_api(url, token=None):
 
 async def main():
     """Main function."""
+    if not HAS_AIOHTTP:
+        print("\n❌ aiohttp not available in this Python environment")
+        print("\nTo test your API, use curl instead:")
+        if len(sys.argv) >= 2:
+            url = sys.argv[1].rstrip("/")
+            print(f"\n  curl -v {url}/lists")
+            if len(sys.argv) >= 3:
+                token = sys.argv[2]
+                print(f"  curl -v -H 'Authorization: Bearer {token}' {url}/lists")
+        else:
+            print("\n  curl -v http://YOUR_SERVER:8080/lists")
+            print("  curl -v http://YOUR_SERVER:8080/lists/LIST_NAME")
+        print("\nOr check the Home Assistant logs:")
+        print("  grep reminders_api home-assistant.log")
+        sys.exit(1)
+
     if len(sys.argv) < 2:
         print("Usage: python test_api.py <API_URL> [TOKEN]")
         print("Example: python test_api.py http://localhost:8080")
