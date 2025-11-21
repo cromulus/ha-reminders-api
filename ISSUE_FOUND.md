@@ -179,6 +179,27 @@ log stream --predicate 'process == "reminders-api"'
 4. **If it works:** The issue is background task permissions
 5. **Convert to LaunchAgent** (Option 1 above)
 
+## SOLUTION: Use the Setup Scripts
+
+We've created automated scripts to fix this properly:
+
+### On aurelius, run these 3 commands:
+
+```bash
+cd ha-reminders-api/scripts
+
+# 1. See what's installed
+bash discover-install.sh
+
+# 2. Remove the old setup
+bash uninstall-reminders.sh
+
+# 3. Install properly with Caddy
+bash setup-proper.sh
+```
+
+See [`scripts/README.md`](scripts/README.md) for full details.
+
 ## For cromulus/reminders-cli Repository
 
 This may be a bug or documentation issue in the reminders-cli project:
