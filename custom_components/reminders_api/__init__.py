@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import RemindersAPIClient
-from .const import CONF_NAME, CONF_TOKEN, DOMAIN, UPDATE_INTERVAL
+from .const import CONF_BASE_PATH, CONF_NAME, CONF_TOKEN, DEFAULT_BASE_PATH, DOMAIN, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         entry.data[CONF_URL],
         entry.data.get(CONF_TOKEN),
+        entry.data.get(CONF_BASE_PATH, DEFAULT_BASE_PATH),
     )
 
     # Create data update coordinator

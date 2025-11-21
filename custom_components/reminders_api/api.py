@@ -36,11 +36,13 @@ class RemindersAPIClient:
         hass: HomeAssistant,
         url: str,
         token: str | None = None,
+        base_path: str = "",
     ) -> None:
         """Initialize the API client."""
         self.hass = hass
         self.url = url.rstrip("/")
         self.token = token
+        self.base_path = base_path.rstrip("/") if base_path else ""
         self._session = async_get_clientsession(hass)
 
     def _get_headers(self) -> dict[str, str]:
@@ -57,7 +59,9 @@ class RemindersAPIClient:
         **kwargs,
     ) -> Any:
         """Make an API request."""
-        url = f"{self.url}{endpoint}"
+        # Prepend base_path if configured
+        full_endpoint = f"{self.base_path}{endpoint}" if self.base_path else endpoint
+        url = f"{self.url}{full_endpoint}"
         headers = self._get_headers()
         timeout = aiohttp.ClientTimeout(total=API_TIMEOUT)
 

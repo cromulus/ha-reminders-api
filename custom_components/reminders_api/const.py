@@ -6,10 +6,12 @@ DOMAIN = "reminders_api"
 CONF_NAME = "name"
 CONF_URL = "url"
 CONF_TOKEN = "token"
+CONF_BASE_PATH = "base_path"
 
 # Defaults
 DEFAULT_NAME = "Reminders"
 DEFAULT_PORT = 8080
+DEFAULT_BASE_PATH = ""  # Empty means root, can be "/api" for path-based routing
 
 # Update interval
 UPDATE_INTERVAL = 30  # seconds

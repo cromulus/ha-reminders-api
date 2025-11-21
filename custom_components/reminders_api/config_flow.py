@@ -11,7 +11,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
 from .api import RemindersAPIClient
-from .const import CONF_NAME, CONF_TOKEN, DEFAULT_NAME, DOMAIN
+from .const import CONF_BASE_PATH, CONF_NAME, CONF_TOKEN, DEFAULT_BASE_PATH, DEFAULT_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ class RemindersConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.hass,
                 user_input[CONF_URL],
                 user_input.get(CONF_TOKEN),
+                user_input.get(CONF_BASE_PATH, DEFAULT_BASE_PATH),
             )
 
             if await api_client.test_connection():
@@ -53,6 +54,7 @@ class RemindersConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
                 vol.Required(CONF_URL): cv.string,
+                vol.Optional(CONF_BASE_PATH, default=DEFAULT_BASE_PATH): cv.string,
                 vol.Optional(CONF_TOKEN): cv.string,
             }
         )

@@ -7,7 +7,14 @@
         "data": {
           "name": "Name",
           "url": "API Server URL",
+          "base_path": "Base Path (e.g. /api, leave empty for root)",
           "token": "API Token (optional)"
+        },
+        "data_description": {
+          "name": "A friendly name for this integration",
+          "url": "The URL of your reminders server (e.g. https://reminders.example.com)",
+          "base_path": "Optional base path if using path-based routing (e.g. /api). Leave empty if API is at root.",
+          "token": "Optional authentication token"
         }
       }
     },
