@@ -119,6 +119,22 @@ automation:
         item: "Check what's needed from the grocery store"
 ```
 
+## Development Status
+
+**Current Version:** 1.0.4 (in development)
+
+### Known Issues
+- Lists may not appear after initial setup - we're actively debugging this
+- Enhanced logging has been added to identify the issue
+- See [DEVELOPMENT.md](DEVELOPMENT.md) for technical details
+- See [NEXT_STEPS.md](NEXT_STEPS.md) for debugging instructions
+
+### Contributing
+If you're experiencing issues:
+1. Run the test script: `bash custom_components/reminders_api/test_api.sh YOUR_SERVER_URL`
+2. Check logs: `grep reminders_api /config/home-assistant.log`
+3. Open an issue with the output
+
 ## Support
 
 For issues, feature requests, or questions, please open an issue on the [GitHub repository](https://github.com/cromulus/ha-reminders-api/issues).
