@@ -38,61 +38,146 @@ reminders-api --auth-required \
 
 ## Diagnosis
 
-The reminders-api server is running but not accessing Apple Reminders data.
+The reminders-api server is running **as a background task**, which runs in a different context than interactive terminal sessions.
 
-### Likely Causes
+### ROOT CAUSE: Background Task Permission Issue
 
-1. **Permissions Issue** (Most Likely)
-   - reminders-api needs Reminders access permission
-   - Check: System Preferences → Security & Privacy → Privacy → Reminders
-   - Grant permission to Terminal or whatever is running reminders-api
+**Problem:** macOS background tasks/services/daemons don't have the same permissions as interactive user sessions.
 
-2. **User Context**
-   - reminders-api may be running as different user than reminders-cli
-   - Check: `whoami` in both contexts
+When you run `reminders-cli` from terminal:
+- ✅ Runs as your user
+- ✅ Has your user's Reminders permissions
+- ✅ Can access Reminders database
 
-3. **Server Initialization**
-   - reminders-api may not be properly initializing Reminders database
-   - Check server logs/output for errors
+When `reminders-api` runs as background task:
+- ❌ Runs in different context (launchd, system user, etc.)
+- ❌ Doesn't have Reminders permissions
+- ❌ Can't access Reminders database
+- Returns empty arrays
 
-## Next Steps to Fix reminders-api
+### How Background Tasks are Different
 
-### 1. Test Locally First
-```bash
-# On the Mac (aurelius), test without Tailscale:
-curl http://127.0.0.1:8080/lists
+1. **User Context** - Background tasks may run as system user or in limited context
+2. **Permissions** - Don't inherit user's Security & Privacy permissions
+3. **Database Access** - Can't access user's Reminders database
+4. **Sandboxing** - May have additional restrictions
+
+## Solutions to Fix Background Task Permissions
+
+### Option 1: Run as User LaunchAgent (Recommended)
+
+Create a **LaunchAgent** (not LaunchDaemon) which runs as your user and has access to Reminders.
+
+**Create file:** `~/Library/LaunchAgents/com.reminders-api.plist`
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.reminders-api</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/PATH/TO/reminders-api</string>
+        <string>--auth-required</string>
+        <string>--token</string>
+        <string>YOUR_TOKEN</string>
+        <string>--host</string>
+        <string>127.0.0.1</string>
+        <string>--port</string>
+        <string>8080</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/reminders-api.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/reminders-api.error.log</string>
+</dict>
+</plist>
 ```
 
-If this also returns `[]`, the issue is not with Tailscale.
-
-### 2. Check Permissions
-1. Open System Preferences
-2. Go to Security & Privacy → Privacy → Reminders
-3. Ensure the app running reminders-api has permission
-4. You may need to add Terminal or the parent process
-
-### 3. Check Server Logs
-Look at the reminders-api server output for any errors or warnings.
-
-### 4. Restart Server with Permissions
+**Load it:**
 ```bash
-# Stop current server
-# Grant permissions in System Preferences
-# Restart:
+launchctl load ~/Library/LaunchAgents/com.reminders-api.plist
+```
+
+This runs as YOUR user and should have Reminders access.
+
+### Option 2: Run in Terminal Session (Quick Test)
+
+Use `screen` or `tmux` to keep it running in a terminal session:
+
+```bash
+# Start a screen session
+screen -S reminders-api
+
+# Run the server
 reminders-api --auth-required --token YOUR_TOKEN --host 127.0.0.1 --port 8080
+
+# Detach with: Ctrl-A then D
+# Reattach with: screen -r reminders-api
 ```
 
-### 5. Test Again
+This runs as your user in a terminal context with full permissions.
+
+### Option 3: Grant Full Disk Access
+
+If using a background task manager, grant it Full Disk Access:
+
+1. System Preferences → Security & Privacy → Privacy
+2. **Full Disk Access** (not just Reminders)
+3. Add the process running reminders-api
+4. Restart the background task
+
+### Option 4: Run Interactively for Testing
+
+For now, just run it in a terminal to test:
+
 ```bash
-# Test locally
-curl http://127.0.0.1:8080/lists
+# Stop the background task
+# Run directly in terminal:
+reminders-api --auth-required --token YOUR_TOKEN --host 127.0.0.1 --port 8080
 
-# Should return something like:
-# [{"name": "Groceries", "uuid": "..."}, ...]
+# Test in another terminal:
+curl http://127.0.0.1:8080/lists
 ```
 
-### 6. Once Fixed
-As soon as reminders-api returns actual list data, the Home Assistant integration will automatically work. No code changes needed!
+If this works, the issue is definitely the background task context.
+
+### How to Check Current Setup
+
+**What type of background task are you using?**
+- LaunchDaemon? (wrong - runs as root/system)
+- LaunchAgent? (correct - runs as user)
+- systemd-style service?
+- Other process manager?
+
+**Check logs:**
+```bash
+# If using launchd:
+tail -f /tmp/reminders-api.log
+tail -f /tmp/reminders-api.error.log
+
+# Or system logs:
+log stream --predicate 'process == "reminders-api"'
+```
+
+## Testing Steps
+
+1. **Stop the background task**
+2. **Run interactively in terminal:**
+   ```bash
+   reminders-api --auth-required --token YOUR_TOKEN --host 127.0.0.1 --port 8080
+   ```
+3. **Test:**
+   ```bash
+   curl http://127.0.0.1:8080/lists
+   ```
+4. **If it works:** The issue is background task permissions
+5. **Convert to LaunchAgent** (Option 1 above)
 
 ## For cromulus/reminders-cli Repository
 
