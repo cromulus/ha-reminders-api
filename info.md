@@ -21,7 +21,7 @@ This integration connects Home Assistant to Apple Reminders through the reminder
 2. Follow the installation instructions in that repository
 3. Start the server:
 ```bash
-reminders serve --port 8080
+reminders-api --host 127.0.0.1 --port 8080
 ```
 
 The server must be accessible from your Home Assistant instance.

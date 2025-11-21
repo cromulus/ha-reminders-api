@@ -24,9 +24,14 @@ This integration requires the reminders-cli tool from [https://github.com/cromul
    - Clone or download the repository from [https://github.com/cromulus/reminders-cli](https://github.com/cromulus/reminders-cli)
    - Follow the installation instructions in that repository's README
 
-2. **Start the reminders-cli server:**
+2. **Start the reminders-api server:**
    ```bash
-   reminders serve --port 8080
+   reminders-api --host 127.0.0.1 --port 8080
+   ```
+
+   Or with authentication:
+   ```bash
+   reminders-api --auth-required --token YOUR_TOKEN --host 127.0.0.1 --port 8080
    ```
 
 3. **Ensure the server is accessible from your Home Assistant instance:**

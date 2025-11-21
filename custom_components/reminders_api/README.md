@@ -32,7 +32,12 @@ Before installing this integration, you need to have reminders-cli running as a 
 
 2. **Start the server**:
    ```bash
-   reminders serve --port 8080
+   reminders-api --host 127.0.0.1 --port 8080
+   ```
+
+   Or with authentication:
+   ```bash
+   reminders-api --auth-required --token YOUR_TOKEN --host 127.0.0.1 --port 8080
    ```
 
 3. **Test the server** is accessible:
