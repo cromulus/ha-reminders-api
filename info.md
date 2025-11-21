@@ -14,17 +14,21 @@ This integration connects Home Assistant to Apple Reminders through the reminder
 
 ## Requirements
 
-⚠️ **Important**: This integration requires the reminders-cli from [https://github.com/cromulus/reminders-cli](https://github.com/cromulus/reminders-cli) to be running as a server on a macOS machine with access to your Apple Reminders.
+⚠️ **Important**: This integration requires the **reminders-cli server** from [https://github.com/cromulus/reminders-cli](https://github.com/cromulus/reminders-cli) running on a macOS machine.
 
 **Quick Setup:**
-1. Clone/download the repository: [https://github.com/cromulus/reminders-cli](https://github.com/cromulus/reminders-cli)
-2. Follow the installation instructions in that repository
-3. Start the server:
+
+The reminders-cli repository includes an automated installation script:
+
 ```bash
-reminders-api --host 127.0.0.1 --port 8080
+git clone https://github.com/cromulus/reminders-cli.git
+cd reminders-cli
+bash install-reminders-stack.sh
 ```
 
-The server must be accessible from your Home Assistant instance.
+This sets up everything: server, Caddy proxy, Cloudflare Tunnel, and proper permissions.
+
+See the reminders-cli repository for detailed instructions.
 
 ## Setup
 
