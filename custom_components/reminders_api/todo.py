@@ -121,14 +121,32 @@ class RemindersTodoListEntity(CoordinatorEntity[RemindersDataUpdateCoordinator],
             if (uid := self._reminder_uid(reminder))
         ]
 
-    def _parse_due_date(self, due_date_str: str | None) -> datetime | None:
-        """Parse due date string to datetime."""
-        if not due_date_str:
+    def _parse_due_date(self, due_date_value) -> datetime | None:
+        if not due_date_value:
             return None
+
+        if isinstance(due_date_value, dict):
+            due_date_value = (
+                due_date_value.get("iso")
+                or due_date_value.get("formatted")
+            )
+
+        if not isinstance(due_date_value, str):
+            _LOGGER.warning(
+                "Unsupported due date format: %s",
+                due_date_value,
+            )
+            return None
+            
         try:
-            return datetime.fromisoformat(due_date_str.replace("Z", "+00:00"))
-        except (ValueError, AttributeError):
-            _LOGGER.warning("Failed to parse due date: %s", due_date_str)
+            return datetime.fromisoformat(
+                due_date_value.replace("Z", "+00:00")
+            )
+        except ValueError:
+            _LOGGER.warning(
+                "Failed to parse due date: %s",
+                due_date_value,
+            )
             return None
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
